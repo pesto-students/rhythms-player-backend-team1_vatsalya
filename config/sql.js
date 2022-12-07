@@ -77,18 +77,22 @@ values (?,?,?);`;
 const getHistory = `SELECT * FROM  tbl_song_history WHERE user_id = ? ORDER BY created_timestamp DESC LIMIT 30`;
 
 // playlist queries
-const getPlaylists = `SELECT name
+const getPlaylists = `SELECT name,id
 from tbl_playlist
 where user_id = ?
 order by created_timestamp DESC`;
 
 // create playlist
-const createPlaylist = `insert into tbl_playlist (id, name, user_id, created_timestamp)
-values (?,?,?,?);`;
+const createPlaylist = `insert into tbl_playlist ( name, user_id, created_timestamp)
+values (?,?,?);`;
 
 // add song to playlist
 const addSongToPlaylist = `insert into tbl_playlist_song (playlist_id, song_id)
 values (?,?);`;
+
+// get all song of a playlist
+
+const getPlaylistsSongList = `select song_id from tbl_playlist_song where playlist_id = ?`;
 
 module.exports = {
   getLiked,
@@ -100,4 +104,5 @@ module.exports = {
   getPlaylists,
   createPlaylist,
   addSongToPlaylist,
+  getPlaylistsSongList,
 };
