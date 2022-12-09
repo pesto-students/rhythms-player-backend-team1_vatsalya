@@ -99,114 +99,44 @@ router.delete("/v1/unlike", (req, res) => {
     connection.end();
   });
 });
+// to create a playlist with a given name
+router.post("/v1/playlists", (req, res) => {
+  const { name } = req.body;
 
-router.post("/v1/playlist/create", (req, res) => {
-  const { userId, playlistName } = req.body;
   let connection = mysql.createConnection(config);
-  let sql = `CALL SP_CreateUserPlaylist(?,?)`;
-  console.log("Playlist -" + playlistName + "is being created by user :" + userId);
-  connection.query(sql, [userId, playlistName], (error, results, fields) => {
-    if (error) {
-      return console.error(error.message);
+  const isoDate = new Date();
+  const mySQLDateString = isoDate.toJSON().slice(0, 19).replace("T", " ");
+  console.log(`${mySQLDateString}`);
+  let user_id = 3;
+  let sql = queries.createPlaylist;
+  connection.query(
+    sql,
+    [name, user_id, mySQLDateString],
+    (error, results, fields) => {
+      if (error) {
+        return console.error(error.message);
+      }
+      console.log(results);
+      connection.end();
+      res.json({ id: results.insertId, name: name });
     }
-    console.log(results);
-    connection.end();
-    res.json(results);
-  });
+  );
 });
-
-router.post("/v1/playlist/update", (req, res) => {
-  const { userId, playlistId, playlistName, isActive } = req.body;
-  let connection = mysql.createConnection(config);
-  let sql = `CALL SP_UpdatePlaylistDetails(?,?,?,?)`;
-  console.log("playlistId -" + playlistId + "is being edited by user :" + userId);
-  connection.query(sql, [userId, playlistId, playlistName, isActive], (error, results, fields) => {
-    if (error) {
-      return console.error(error.message);
-    }
-    console.log(results);
-    connection.end();
-    res.json(results);
-  });
-});
-
 // get user playlist
-router.get("/v1/playlist/list", (req, res) => {
-  const { userId } = req.query;
+router.get("/v1/playlists", (req, res) => {
+  const userId = 3; // this need to be changed with each user
+  console.log("i was called");
   let connection = mysql.createConnection(config);
-  let sql = `CALL SP_GetUserPlaylists(?)`;
-  console.log("getting playlists for user :", userId);
+  let sql = queries.getPlaylists;
   connection.query(sql, [userId], (error, results, fields) => {
     if (error) {
-      return console.error(error.message);
+      return console.error(error);
     }
-    console.log(results[0]);
+    console.log(results);
+    res.json(results);
     connection.end();
-    res.json(results[0]);
   });
 });
-
-
-// get user playlist
-router.post("/v1/playlist/song/add", (req, res) => {
-  const { playlistId, songName, songUUID, href, previewURL, durationMS } = req.body;
-  let connection = mysql.createConnection(config);
-  let sql = `CALL SP_AddSongToPlaylist(?,?,?,?,?,?)`;
-  connection.query(sql, [playlistId, songName, songUUID, href, previewURL, durationMS], (error, results, fields) => {
-    if (error) {
-      return console.error(error.message);
-    }
-    console.log(results[0]);
-    connection.end();
-    res.json(results[0]);
-  });
-});
-
-router.post("/v1/playlist/song/artist/add", (req, res) => {
-  const { songId, name, songhref, songuri } = req.body;
-  let connection = mysql.createConnection(config);
-  let sql = `CALL SP_AddArtistInfoForPlaylistSong(?,?,?,?)`;
-  connection.query(sql, [songId, name, songhref, songuri], (error, results, fields) => {
-    if (error) {
-      return console.error(error.message);
-    }
-    console.log(results[0]);
-    connection.end();
-    res.json(results[0]);
-  });
-});
-
-router.get("/v1/playlist/song/list", (req, res) => {
-  const { playlistId } = req.query;
-  let connection = mysql.createConnection(config);
-  let sql = `CALL SP_GetPlaylistSongs(?)`;
-  console.log("getting songs for playlist :", playlistId);
-  connection.query(sql, [playlistId], (error, results, fields) => {
-    if (error) {
-      return console.error(error.message);
-    }
-    console.log(results[0]);
-    connection.end();
-    res.json(results[0]);
-  });
-});
-
-
-router.post("/v1/playlist/song/delete", (req, res) => {
-  const { playlistId, songId } = req.body;
-  let connection = mysql.createConnection(config);
-  let sql = `CALL SP_RemoveSongFromPlaylist(?,?)`;
-  connection.query(sql, [playlistId, songId], (error, results, fields) => {
-    if (error) {
-      return console.error(error.message);
-    }
-    console.log(results[0]);
-    connection.end();
-    res.json(results[0]);
-  });
-});
-
-
 // to add a song to the playlist
 router.post("/v1/playlists/songs", (req, res) => {
   const { song_id, playlist_id } = req.body;
